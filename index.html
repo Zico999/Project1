@@ -1,25 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Summariser</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
-    textarea { width: 100%; height: 200px; margin-bottom: 10px; padding: 10px; }
-    select, button { padding: 8px; margin-right: 10px; margin-bottom: 10px; }
-    .summary-box { background: #fff; padding: 15px; border: 1px solid #ccc; white-space: pre-wrap; margin-top: 10px; }
-    .error { color: red; margin-top: 10px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ele's Big Daft Summary Machine</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height:100vh; background: linear-gradient(135deg, #c9a96e 0%, #8B4513 100%); padding:20px; color:#2d3748; }
+  .container { max-width:900px; margin:0 auto; }
+  header { text-align:center; padding:30px 0 20px; color:white; }
+  header h1 { font-size:2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  header p { opacity:0.9; }
+  textarea { width:100%; padding:14px; border:2px solid #e2e8f0; border-radius:10px; font-family:inherit; font-size:0.95rem; line-height:1.6; resize:vertical; outline:none; margin-bottom:12px; }
+  textarea:focus { border-color:#c9a96e; }
+  select { padding:8px 12px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.9rem; outline:none; cursor:pointer; margin-right:10px; margin-bottom:10px; }
+  select:focus { border-color:#c9a96e; }
+  button { padding:12px 18px; border:none; border-radius:10px; background:linear-gradient(135deg,#c9a96e,#8B4513); color:white; font-weight:600; cursor:pointer; transition:opacity 0.2s, transform 0.1s; }
+  button:hover { opacity:0.92; transform:translateY(-1px); }
+  .summary-box { background:#fdf8f3; border:2px solid #e8d5b7; border-radius:10px; padding:20px; line-height:1.8; margin-top:12px; white-space:pre-wrap; }
+  .error { color:#c53030; margin-top:12px; }
+  .options { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+  label { font-weight:600; color:#2d3748; }
+</style>
 </head>
 <body>
+<div class="container">
+<header>
+  <h1>📄 Ele's Big Daft Summary Machine</h1>
+  <p>Paste text and get an AI-powered summary</p>
+</header>
 
-<h1>📄 AI Summariser</h1>
-<p>Paste your text and get an AI summary</p>
+<textarea id="inputText" placeholder="Paste your text here..."></textarea>
 
-<textarea id="inputText" placeholder="Paste text here..."></textarea>
-
-<div>
+<div class="options">
   <label>Length:
     <select id="summaryLength">
       <option value="short">Short</option>
@@ -50,8 +63,8 @@
 <button id="summariseBtn">✨ Summarise</button>
 
 <div class="error" id="errorBox"></div>
-
 <div class="summary-box" id="summaryOutput"></div>
+</div>
 
 <script>
 const inputText = document.getElementById("inputText");
@@ -64,36 +77,32 @@ const summariseBtn = document.getElementById("summariseBtn");
 
 summariseBtn.addEventListener("click", async () => {
   const text = inputText.value.trim();
-  if (!text) { errorBox.textContent = "Please enter some text"; return; }
+  if(!text){ errorBox.textContent="Please enter some text"; return; }
 
-  errorBox.textContent = "";
-  summaryOutput.textContent = "⏳ Summarising...";
+  errorBox.textContent="";
+  summaryOutput.textContent="⏳ Summarising...";
 
-  try {
-    const res = await fetch("/api/summarise", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+  try{
+    const res = await fetch("/api/summarise",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
         text,
-        length: summaryLength.value,
-        style: summaryStyle.value,
-        focus: summaryFocus.value
+        length:summaryLength.value,
+        style:summaryStyle.value,
+        focus:summaryFocus.value
       })
     });
 
     const data = await res.json();
-    if (res.ok) {
-      summaryOutput.textContent = data.summary;
-    } else {
-      summaryOutput.textContent = "";
-      errorBox.textContent = "Error: " + (data.error || "Unknown error");
-    }
-  } catch (err) {
-    summaryOutput.textContent = "";
-    errorBox.textContent = "Error: " + err.message;
+    if(res.ok){ summaryOutput.textContent = data.summary; }
+    else{ summaryOutput.textContent=""; errorBox.textContent = "Error: "+(data.error||"Unknown error"); }
+
+  }catch(err){
+    summaryOutput.textContent="";
+    errorBox.textContent="Error: "+err.message;
   }
 });
 </script>
-
 </body>
 </html>
