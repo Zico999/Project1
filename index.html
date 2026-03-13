@@ -1,115 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Ele's Big Daft Summary Machine</title>
-<style>
-body{font-family:Arial,sans-serif;background:#fdf8f3;padding:30px;max-width:900px;margin:auto;}
-h1{text-align:center;color:#8B4513;}
-textarea{width:100%;height:200px;padding:12px;font-size:14px;border:1px solid #ddd;border-radius:6px;}
-button{margin-top:12px;padding:10px 20px;font-size:16px;background:#8B4513;color:white;border:none;border-radius:6px;cursor:pointer;}
-button:hover{opacity:.9;}
-#output{margin-top:20px;padding:15px;background:white;border:1px solid #e8d5b7;border-radius:6px;white-space:pre-wrap;}
-.options{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;}
-label{font-size:14px;}
-select{padding:6px;border-radius:5px;border:1px solid #ccc;}
-#wordCount{margin-top:6px;font-size:13px;color:#555;}
-.error{color:#c53030;margin-top:10px;}
-.loading{display:flex;align-items:center;gap:10px;margin-top:10px;display:none;}
-.spinner{width:20px;height:20px;border:3px solid #e8d5b7;border-top-color:#8B4513;border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Summariser</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
+    textarea { width: 100%; height: 200px; margin-bottom: 10px; padding: 10px; }
+    select, button { padding: 8px; margin-right: 10px; margin-bottom: 10px; }
+    .summary-box { background: #fff; padding: 15px; border: 1px solid #ccc; white-space: pre-wrap; margin-top: 10px; }
+    .error { color: red; margin-top: 10px; }
+  </style>
 </head>
 <body>
 
-<h1>📄 Ele's Big Daft Summary Machine</h1>
+<h1>📄 AI Summariser</h1>
+<p>Paste your text and get an AI summary</p>
 
-<textarea id="text" placeholder="Paste your text here..."></textarea>
-<div id="wordCount">0 words · 0 characters</div>
+<textarea id="inputText" placeholder="Paste text here..."></textarea>
 
-<div class="options">
-<label>Length:
-<select id="summaryLength">
-<option value="short">Short (1–2 sentences)</option>
-<option value="medium" selected>Medium (1 paragraph)</option>
-<option value="long">Long (detailed)</option>
-</select>
-</label>
+<div>
+  <label>Length:
+    <select id="summaryLength">
+      <option value="short">Short</option>
+      <option value="medium" selected>Medium</option>
+      <option value="long">Long</option>
+    </select>
+  </label>
 
-<label>Style:
-<select id="summaryStyle">
-<option value="concise" selected>Concise</option>
-<option value="bullet">Bullet Points</option>
-<option value="formal">Formal</option>
-<option value="simple">Simple (ELI5)</option>
-</select>
-</label>
+  <label>Style:
+    <select id="summaryStyle">
+      <option value="concise">Concise</option>
+      <option value="bullet">Bullet Points</option>
+      <option value="formal">Formal</option>
+      <option value="simple">Simple</option>
+    </select>
+  </label>
 
-<label>Focus:
-<select id="summaryFocus">
-<option value="general" selected>General</option>
-<option value="key points">Key Points</option>
-<option value="action items">Action Items</option>
-<option value="conclusions">Conclusions</option>
-</select>
-</label>
+  <label>Focus:
+    <select id="summaryFocus">
+      <option value="general" selected>General</option>
+      <option value="key points">Key Points</option>
+      <option value="action items">Action Items</option>
+      <option value="conclusions">Conclusions</option>
+    </select>
+  </label>
 </div>
 
 <button id="summariseBtn">✨ Summarise</button>
 
-<div class="loading" id="loading"><div class="spinner"></div><div>Summarising...</div></div>
+<div class="error" id="errorBox"></div>
 
-<div id="output"></div>
-<div class="error" id="error"></div>
+<div class="summary-box" id="summaryOutput"></div>
 
 <script>
-const textEl = document.getElementById('text');
-const wordCountEl = document.getElementById('wordCount');
-const summariseBtn = document.getElementById('summariseBtn');
-const loadingEl = document.getElementById('loading');
-const outputEl = document.getElementById('output');
-const errorEl = document.getElementById('error');
+const inputText = document.getElementById("inputText");
+const summaryLength = document.getElementById("summaryLength");
+const summaryStyle = document.getElementById("summaryStyle");
+const summaryFocus = document.getElementById("summaryFocus");
+const summaryOutput = document.getElementById("summaryOutput");
+const errorBox = document.getElementById("errorBox");
+const summariseBtn = document.getElementById("summariseBtn");
 
-textEl.addEventListener('input',()=>{
-    const txt = textEl.value.trim();
-    const words = txt?txt.split(/\s+/).length:0;
-    const chars = textEl.value.length;
-    wordCountEl.textContent=`${words.toLocaleString()} words · ${chars.toLocaleString()} characters`;
-});
+summariseBtn.addEventListener("click", async () => {
+  const text = inputText.value.trim();
+  if (!text) { errorBox.textContent = "Please enter some text"; return; }
 
-async function summarise(){
-    const text = textEl.value.trim();
-    if(!text){errorEl.textContent="⚠️ Paste some text first";return;}
-    if(text.split(/\s+/).length<10){errorEl.textContent="⚠️ Please enter at least 10 words";return;}
-    errorEl.textContent="";outputEl.textContent="";loadingEl.style.display="flex";summariseBtn.disabled=true;
+  errorBox.textContent = "";
+  summaryOutput.textContent = "⏳ Summarising...";
 
-    const length = document.getElementById("summaryLength").value;
-    const style = document.getElementById("summaryStyle").value;
-    const focus = document.getElementById("summaryFocus").value;
+  try {
+    const res = await fetch("/api/summarise", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text,
+        length: summaryLength.value,
+        style: summaryStyle.value,
+        focus: summaryFocus.value
+      })
+    });
 
-    const lengthMap={short:"in 1–2 sentences",medium:"in one paragraph",long:"in a detailed multi-paragraph summary"};
-    const styleMap={concise:"Write in a concise, direct style.",bullet:"Format as clear bullet points.",formal:"Write in a formal, professional tone.",simple:"Write in very simple language as if explaining to a 10-year-old (ELI5 style)."};
-
-    const prompt=`You are an expert summariser. Summarise the following text ${lengthMap[length]}, focusing on ${focus}. ${styleMap[style]}\n\nText:\n"""${text}"""`;
-
-    try{
-        const response = await fetch("/api/summarise",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:prompt})});
-        const raw = await response.text();
-        let data;
-        try{data=JSON.parse(raw);}catch{throw new Error("Invalid JSON returned from server");}
-        if(data.error) throw new Error(data.error);
-        outputEl.textContent=data.summary;
-    }catch(err){
-        outputEl.textContent="";
-        errorEl.textContent="❌ "+err.message;
-    }finally{
-        loadingEl.style.display="none";
-        summariseBtn.disabled=false;
+    const data = await res.json();
+    if (res.ok) {
+      summaryOutput.textContent = data.summary;
+    } else {
+      summaryOutput.textContent = "";
+      errorBox.textContent = "Error: " + (data.error || "Unknown error");
     }
-}
-
-// Ctrl+Enter shortcut
-textEl.addEventListener('keydown',(e)=>{if(e.ctrlKey&&e.key==="Enter")summarise();});
+  } catch (err) {
+    summaryOutput.textContent = "";
+    errorBox.textContent = "Error: " + err.message;
+  }
+});
 </script>
 
 </body>
