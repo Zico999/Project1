@@ -1,183 +1,119 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Text Summariser</title>
+<title>Ele's Text Summariser</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height:100vh;
-    background: linear-gradient(135deg, #c9a96e 0%, #8B4513 100%);
-    padding:30px 20px;
+    background: linear-gradient(135deg,#c9a96e,#8B4513);
+    padding:20px;
     color:#2d3748;
   }
   .container { max-width:900px; margin:0 auto; }
-  header { text-align:center; padding:20px 0; color:white; }
-  header h1 { font-size:2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2); margin-bottom:8px; }
-  header p { opacity:0.9; }
-  
-  .back-btn {
-    margin-bottom:20px;
-    padding:10px 16px;
-    font-weight:600;
-    font-size:0.95rem;
-    color:white;
-    background:linear-gradient(135deg,#8B4513,#c9a96e);
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    transition:opacity 0.2s, transform 0.1s;
-  }
-  .back-btn:hover { opacity:0.92; transform:translateY(-1px); }
-
+  h1 { color:white; text-align:center; margin-bottom:20px; text-shadow:0 2px 4px rgba(0,0,0,0.3); }
   textarea {
-    width: 100%;
-    min-height: 400px;
-    max-height: 700px;
-    padding: 18px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 1rem;
-    line-height: 1.8;
-    resize: vertical;
-    outline: none;
-    margin-bottom: 18px;
+    width:100%; min-height:220px; padding:14px; border-radius:10px;
+    font-family:inherit; font-size:0.95rem; border:2px solid #e2e8f0; outline:none; resize:vertical;
   }
   textarea:focus { border-color:#c9a96e; }
-
-  .options {
-    display:flex;
-    flex-wrap:wrap;
-    gap:15px;
-    margin-bottom:18px;
-    font-weight:600;
-  }
-  select {
-    padding:10px 14px;
-    border:2px solid #e2e8f0;
-    border-radius:10px;
-    font-size:1rem;
-    outline:none;
-    cursor:pointer;
-  }
-  select:focus { border-color:#c9a96e; }
-
-  button.summarise-btn {
-    padding:14px 22px;
-    border:none;
-    border-radius:12px;
-    background:linear-gradient(135deg,#c9a96e,#8B4513);
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-    font-size:1.05rem;
-    transition:opacity 0.2s, transform 0.1s;
-    margin-bottom:18px;
-  }
-  button.summarise-btn:hover { opacity:0.92; transform:translateY(-1px); }
-
-  .summary-box {
-    background:#fdf8f3;
-    border:2px solid #e8d5b7;
-    border-radius:12px;
-    padding:22px;
-    line-height:1.8;
-    white-space:pre-wrap;
-    margin-top:12px;
-    font-size:1rem;
-  }
-  .error { color:#c53030; margin-top:12px; font-weight:600; }
+  .options-row { display:flex; gap:16px; flex-wrap:wrap; margin-top:16px; }
+  select { padding:8px 12px; border-radius:8px; border:2px solid #e2e8f0; font-size:0.95rem; outline:none; }
+  button { margin-top:20px; padding:14px; font-size:1rem; font-weight:600; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(135deg,#c9a96e,#8B4513); color:white; }
+  button:disabled { opacity:0.6; cursor:not-allowed; }
+  .summary-box { margin-top:20px; background:#fdf8f3; border:2px solid #e8d5b7; border-radius:10px; padding:20px; white-space:pre-wrap; line-height:1.6; }
+  .error-box { margin-top:16px; padding:14px; border-radius:10px; background:#fff5f5; border:2px solid #fed7d7; color:#c53030; display:none; }
+  .back-btn { margin-bottom:20px; padding:10px 16px; background:white; color:#8B4513; border:2px solid #8B4513; border-radius:8px; cursor:pointer; }
+  .back-btn:hover { background:#8B4513; color:white; }
 </style>
 </head>
 <body>
 <div class="container">
-<header>
-  <h1>📄 Ele's Big Daft Summary Machine</h1>
-  <p>Paste your text and get an AI-powered summary</p>
-</header>
+  <button class="back-btn" onclick="window.location.href='/'">⬅ Back to Ele's Tools</button>
+  <h1>📄 Text Summariser</h1>
 
-<button class="back-btn" onclick="goBack()">← Back to Ele's Tools</button>
+  <textarea id="inputText" placeholder="Paste your text here..."></textarea>
 
-<textarea id="inputText" placeholder="Paste your text here..."></textarea>
-
-<div class="options">
-  <label>Length:
+  <div class="options-row">
     <select id="summaryLength">
-      <option value="short">Short</option>
-      <option value="medium" selected>Medium</option>
-      <option value="long">Long</option>
+      <option value="short">Short (1–2 sentences)</option>
+      <option value="medium" selected>Medium (1 paragraph)</option>
+      <option value="long">Long (detailed)</option>
     </select>
-  </label>
-
-  <label>Style:
     <select id="summaryStyle">
       <option value="concise">Concise</option>
       <option value="bullet">Bullet Points</option>
       <option value="formal">Formal</option>
-      <option value="simple">Simple</option>
+      <option value="simple">Simple (ELI5)</option>
     </select>
-  </label>
-
-  <label>Focus:
     <select id="summaryFocus">
-      <option value="general" selected>General</option>
+      <option value="general">General</option>
       <option value="key points">Key Points</option>
       <option value="action items">Action Items</option>
       <option value="conclusions">Conclusions</option>
     </select>
-  </label>
-</div>
+  </div>
 
-<button class="summarise-btn" id="summariseBtn">✨ Summarise</button>
+  <div class="error-box" id="errorBox"></div>
 
-<div class="error" id="errorBox"></div>
-<div class="summary-box" id="summaryOutput"></div>
+  <button id="summariseBtn" onclick="summarise()">✨ Summarise</button>
+
+  <div class="summary-box" id="summaryOutput" style="display:none;"></div>
 </div>
 
 <script>
-function goBack() {
-  window.location.href = "/index.html";  // returns to landing page
-}
-
 const inputText = document.getElementById("inputText");
-const summaryLength = document.getElementById("summaryLength");
-const summaryStyle = document.getElementById("summaryStyle");
-const summaryFocus = document.getElementById("summaryFocus");
 const summaryOutput = document.getElementById("summaryOutput");
 const errorBox = document.getElementById("errorBox");
 const summariseBtn = document.getElementById("summariseBtn");
 
-summariseBtn.addEventListener("click", async () => {
-  const text = inputText.value.trim();
-  if(!text){ errorBox.textContent="Please enter some text"; return; }
+function showError(msg){ errorBox.textContent=msg; errorBox.style.display="block"; }
+function hideError(){ errorBox.style.display="none"; }
 
-  errorBox.textContent="";
-  summaryOutput.textContent="⏳ Summarising...";
+async function summarise(){
+  const text = inputText.value.trim();
+  const length = document.getElementById("summaryLength").value;
+  const style = document.getElementById("summaryStyle").value;
+  const focus = document.getElementById("summaryFocus").value;
+
+  hideError();
+  summaryOutput.style.display="none";
+
+  if(!text){ showError("⚠️ Please enter text."); return; }
+  if(text.split(/\s+/).length < 10){ showError("⚠️ Please enter at least 10 words."); return; }
+
+  summariseBtn.disabled=true;
+  summariseBtn.textContent="⏳ Summarising...";
 
   try{
-    const res = await fetch("/api/summarise",{
+    const res = await fetch("/api/summarise", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        text,
-        length:summaryLength.value,
-        style:summaryStyle.value,
-        focus:summaryFocus.value
-      })
+      body: JSON.stringify({text,length,style,focus})
     });
 
+    const contentType = res.headers.get("content-type") || "";
+    if(!contentType.includes("application/json")){
+      throw new Error("Server did not return JSON. Check deployment.");
+    }
+
     const data = await res.json();
-    if(res.ok){ summaryOutput.textContent = data.summary; }
-    else{ summaryOutput.textContent=""; errorBox.textContent = "Error: "+(data.error||"Unknown error"); }
+    if(data.error) throw new Error(data.error);
+
+    summaryOutput.textContent = data.summary;
+    summaryOutput.style.display="block";
 
   }catch(err){
-    summaryOutput.textContent="";
-    errorBox.textContent="Error: "+err.message;
+    showError("❌ Error: "+err.message);
+  }finally{
+    summariseBtn.disabled=false;
+    summariseBtn.textContent="✨ Summarise";
   }
-});
+}
 </script>
 </body>
 </html>
