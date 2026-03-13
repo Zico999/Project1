@@ -1,118 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ele's Text Summariser</title>
+<title>Text Summariser</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height:100vh;
-    background: linear-gradient(135deg,#c9a96e,#8B4513);
-    padding:20px;
-    color:#2d3748;
-  }
-  .container { max-width:900px; margin:0 auto; }
-  h1 { color:white; text-align:center; margin-bottom:20px; text-shadow:0 2px 4px rgba(0,0,0,0.3); }
-  textarea {
-    width:100%; min-height:220px; padding:14px; border-radius:10px;
-    font-family:inherit; font-size:0.95rem; border:2px solid #e2e8f0; outline:none; resize:vertical;
-  }
-  textarea:focus { border-color:#c9a96e; }
-  .options-row { display:flex; gap:16px; flex-wrap:wrap; margin-top:16px; }
-  select { padding:8px 12px; border-radius:8px; border:2px solid #e2e8f0; font-size:0.95rem; outline:none; }
-  button { margin-top:20px; padding:14px; font-size:1rem; font-weight:600; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(135deg,#c9a96e,#8B4513); color:white; }
-  button:disabled { opacity:0.6; cursor:not-allowed; }
-  .summary-box { margin-top:20px; background:#fdf8f3; border:2px solid #e8d5b7; border-radius:10px; padding:20px; white-space:pre-wrap; line-height:1.6; }
-  .error-box { margin-top:16px; padding:14px; border-radius:10px; background:#fff5f5; border:2px solid #fed7d7; color:#c53030; display:none; }
-  .back-btn { margin-bottom:20px; padding:10px 16px; background:white; color:#8B4513; border:2px solid #8B4513; border-radius:8px; cursor:pointer; }
-  .back-btn:hover { background:#8B4513; color:white; }
+body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #c9a96e 0%, #8B4513 100%); color:#2d3748; margin:0; padding:20px; }
+.container { max-width:900px; margin:0 auto; }
+h1 { text-align:center; color:white; margin-bottom:20px; text-shadow:0 2px 4px rgba(0,0,0,0.2); }
+textarea { width:100%; min-height:400px; padding:14px; border-radius:10px; border:2px solid #e2e8f0; font-size:1rem; font-family:inherit; resize:vertical; }
+button { margin-top:20px; width:100%; padding:14px; font-size:1.05rem; font-weight:600; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(135deg, #c9a96e 0%, #8B4513 100%); color:white; transition:0.2s; }
+button:hover:not(:disabled) { opacity:0.92; transform:translateY(-1px); }
+button:disabled { opacity:0.6; cursor:not-allowed; }
+#summaryOutput { margin-top:20px; background:#fdf8f3; border:2px solid #e8d5b7; padding:20px; border-radius:10px; white-space:pre-wrap; }
+#errorBox { color:red; margin-top:12px; }
 </style>
 </head>
 <body>
 <div class="container">
-  <button class="back-btn" onclick="window.location.href='/'">⬅ Back to Ele's Tools</button>
   <h1>📄 Text Summariser</h1>
-
-  <textarea id="inputText" placeholder="Paste your text here..."></textarea>
-
-  <div class="options-row">
-    <select id="summaryLength">
-      <option value="short">Short (1–2 sentences)</option>
-      <option value="medium" selected>Medium (1 paragraph)</option>
-      <option value="long">Long (detailed)</option>
-    </select>
-    <select id="summaryStyle">
-      <option value="concise">Concise</option>
-      <option value="bullet">Bullet Points</option>
-      <option value="formal">Formal</option>
-      <option value="simple">Simple (ELI5)</option>
-    </select>
-    <select id="summaryFocus">
-      <option value="general">General</option>
-      <option value="key points">Key Points</option>
-      <option value="action items">Action Items</option>
-      <option value="conclusions">Conclusions</option>
-    </select>
-  </div>
-
-  <div class="error-box" id="errorBox"></div>
-
-  <button id="summariseBtn" onclick="summarise()">✨ Summarise</button>
-
-  <div class="summary-box" id="summaryOutput" style="display:none;"></div>
+  <textarea id="inputText" placeholder="Paste your document here..."></textarea>
+  <div id="errorBox"></div>
+  <button onclick="summarise()">✨ Summarise</button>
+  <div id="summaryOutput" style="display:none"></div>
 </div>
 
 <script>
-const inputText = document.getElementById("inputText");
-const summaryOutput = document.getElementById("summaryOutput");
-const errorBox = document.getElementById("errorBox");
-const summariseBtn = document.getElementById("summariseBtn");
+async function summarise() {
+  const text = document.getElementById("inputText").value.trim();
+  const errorBox = document.getElementById("errorBox");
+  const out = document.getElementById("summaryOutput");
+  const btn = document.querySelector("button");
+  errorBox.textContent = "";
+  out.style.display = "none";
 
-function showError(msg){ errorBox.textContent=msg; errorBox.style.display="block"; }
-function hideError(){ errorBox.style.display="none"; }
+  if(text.split(/\s+/).length < 10) { errorBox.textContent="Please enter at least 10 words"; return; }
 
-async function summarise(){
-  const text = inputText.value.trim();
-  const length = document.getElementById("summaryLength").value;
-  const style = document.getElementById("summaryStyle").value;
-  const focus = document.getElementById("summaryFocus").value;
+  btn.disabled=true; btn.textContent="⏳ Summarising...";
 
-  hideError();
-  summaryOutput.style.display="none";
-
-  if(!text){ showError("⚠️ Please enter text."); return; }
-  if(text.split(/\s+/).length < 10){ showError("⚠️ Please enter at least 10 words."); return; }
-
-  summariseBtn.disabled=true;
-  summariseBtn.textContent="⏳ Summarising...";
-
-  try{
+  try {
     const res = await fetch("/api/summarise", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({text,length,style,focus})
+      body:JSON.stringify({ text, length:"medium", style:"concise", focus:"general" })
     });
 
-    const contentType = res.headers.get("content-type") || "";
-    if(!contentType.includes("application/json")){
-      throw new Error("Server did not return JSON. Check deployment.");
-    }
+    if(!res.headers.get("content-type")?.includes("application/json")) throw new Error("Server did not return JSON");
 
     const data = await res.json();
     if(data.error) throw new Error(data.error);
 
-    summaryOutput.textContent = data.summary;
-    summaryOutput.style.display="block";
+    out.textContent=data.summary;
+    out.style.display="block";
 
-  }catch(err){
-    showError("❌ Error: "+err.message);
-  }finally{
-    summariseBtn.disabled=false;
-    summariseBtn.textContent="✨ Summarise";
-  }
+  } catch(err) { errorBox.textContent="❌ "+err.message; }
+  finally { btn.disabled=false; btn.textContent="✨ Summarise"; }
 }
 </script>
 </body>

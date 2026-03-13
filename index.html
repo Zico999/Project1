@@ -5,59 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ele's Tools</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height:100vh;
-    background: linear-gradient(135deg, #c9a96e 0%, #8B4513 100%);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-    color:white;
-    text-align:center;
-  }
-  .container { max-width:900px; width:100%; }
-  h1 { font-size:3rem; margin-bottom:20px; text-shadow:0 2px 4px rgba(0,0,0,0.3); }
-  p { font-size:1.2rem; margin-bottom:30px; opacity:0.9; }
-
-  .tools-grid {
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap:20px;
-    justify-items:center;
-  }
-
-  .tool-btn {
-    width:100%;
-    padding:16px 0;
-    font-size:1.1rem;
-    font-weight:600;
-    color:white;
-    background:linear-gradient(135deg,#c9a96e,#8B4513);
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    transition:opacity 0.2s, transform 0.1s;
-  }
-  .tool-btn:hover { opacity:0.92; transform:translateY(-1px); }
+body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #c9a96e 0%, #8B4513 100%); color: white; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
+.container { text-align:center; }
+h1 { font-size:2.5rem; margin-bottom:1rem; text-shadow:0 2px 4px rgba(0,0,0,0.2); }
+button { padding:14px 28px; font-size:1.2rem; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(135deg, #8B4513 0%, #c9a96e 100%); color:white; transition:0.2s; }
+button:hover { opacity:0.9; transform:translateY(-1px); }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>Ele's Tools</h1>
-  <p>Your collection of handy AI-powered utilities</p>
-
-  <div class="tools-grid">
-    <button class="tool-btn" onclick="goToSummariser()">Text Summariser</button>
-    <!-- Future tools can be added here -->
-  </div>
+  <button onclick="location.href='summariser.html'">Text Summariser</button>
 </div>
-
-<script>
-function goToSummariser(){
-  window.location.href = "/summariser.html";
-}
-</script>
 </body>
 </html>
